@@ -1,64 +1,99 @@
 module Main exposing (..)
 
--- Press buttons to increment and decrement a counter.
---
--- Read how it works:
---   https://guide.elm-lang.org/architecture/buttons.html
---
-
-
 import Browser
-import Html exposing (Html, button, div, text)
-import Html.Events exposing (onClick)
+import Browser.Navigation as Nav
+import Example.Cat as Cat
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Url
+import Routes
+import Routes exposing (Route(..))
+import Sidenav
 
 
 
 -- MAIN
-
-
+main : Program () Model Msg
 main =
-  Browser.sandbox { init = init, update = update, view = view }
+  Browser.application
+    { init = init
+    , update = update
+    , subscriptions = subscriptions
+    , view = view
+    , onUrlChange = UrlChanged
+    , onUrlRequest = LinkClicked
+    }
 
 
 
 -- MODEL
+type alias Model = 
+  { route : Routes.Route
+  , navKey : Nav.Key
+  , title : String
+  , catModel : Cat.Model
+  }
 
 
-type alias Model = Int
-
-
-init : Model
-init =
-  0
+init : () -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
+init _ url navKey =
+  ( Model (Routes.fromUrl url) navKey "Game Tracker" Cat.Loading
+  , Cmd.none)
 
 
 
 -- UPDATE
-
-
 type Msg
-  = Increment
-  | Decrement
+  = UrlChanged Url.Url
+  | LinkClicked Browser.UrlRequest
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    Increment ->
-      model + 1
+    UrlChanged url ->
+      let
+        newRoute = Routes.fromUrl url
+      in
+      ({model | route = newRoute}, Cmd.none)
+    
+    LinkClicked request ->
+      case request of 
+        Browser.Internal url ->
+          (model, Nav.pushUrl model.navKey (Url.toString url))
+        Browser.External href ->
+          (model, Nav.load href)
 
-    Decrement ->
-      model - 1
+
+
+-- SUBSCRIPTIONS
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+  Sub.none
 
 
 
 -- VIEW
-
-
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
-  div []
-    [ button [ onClick Decrement ] [ text "-" ]
-    , div [] [ text (String.fromInt model) ]
-    , button [ onClick Increment ] [ text "+" ]
+  { title = model.title
+  , body =
+    [ div []
+      [ Sidenav.view ""
+      , viewRoute model
+      ]
     ]
+  }
+
+
+viewRoute : Model -> Html msg
+viewRoute model =
+  case model.route of
+    Routes.Home ->
+      div [] [text "Home"]
+    
+    Routes.Cat ->
+      Cat.view model.catModel
+    
+    Routes.NotFound ->
+      div [] [text "Not found"]

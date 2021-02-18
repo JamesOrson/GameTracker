@@ -1,3 +1,3 @@
 #! /bin/bash
 
-elm reactor
+elm-live src/Main.elm
