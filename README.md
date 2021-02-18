@@ -1,24 +1,14 @@
-# README
+# Game Tracker
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+## Setup
 
-Things you may want to cover:
+### Linux
+#### Elm Setup (Linux)
+Follow the instructions [here](https://guide.elm-lang.org/install) to install Elm 0.19.x
 
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+#### Ruby on Rails Setup (Linux)
+Follow the instructions [here](https://gorails.com/setup/ubuntu/20.04) to install Ruby 3.0.x and Rails 6.1.x
+## Important Links
+* [Github](https://github.com/JamesOrson/GameTracker)
+* [Elm Guide](https://guide.elm-lang.org)
+* [Rails Guide](https://guides.rubyonrails.org/getting_started.html)
