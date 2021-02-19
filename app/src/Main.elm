@@ -38,8 +38,8 @@ type alias Session =
 
 init : () -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
 init _ url navKey =
-  Home.init
-    |> passUpdateTo Home HomeMsg
+  Cat.init
+    |> passUpdateTo Cat CatMsg
 
 
 
@@ -74,14 +74,13 @@ update msg model =
       --   Browser.External href ->
       --     (model, Nav.load href)
     
-    (HomeMsg message, Home home) ->
-      Home.update message home
-        |> passUpdateTo Home HomeMsg
+    -- (HomeMsg message, Home home) ->
+    --   Home.update message home
+    --     |> passUpdateTo Home HomeMsg
 
-    (CatMsg message, _) ->
-      (model, Cmd.none)
-      -- Cat.update message model.catModel
-      --   |> passUpdateTo Cat CatMsg
+    (CatMsg message, Cat cat) ->
+      Cat.update message cat
+        |> passUpdateTo Cat CatMsg
     (_, _) ->
       (model, Cmd.none)
 
@@ -120,5 +119,5 @@ viewRoute model =
       Home.view home
     
     Cat cat ->
-      div [] [text "Cat"]
-      -- Cat.view cat
+      -- div [] [text "Cat"]
+      Cat.view cat

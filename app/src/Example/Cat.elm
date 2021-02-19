@@ -21,9 +21,11 @@ type alias Model
     }
 
 
-init : () -> (Model, Cmd Msg)
-init _ =
-  (Model Loading, getRandomCatGif)
+init : (Model, Cmd Msg)
+init =
+  ( Model Loading
+  , getRandomCatGif
+  )
 
 
 
@@ -57,7 +59,7 @@ subscriptions _ =
 
 
 -- VIEW
-view : Model -> Html Msg
+view : Model -> Html msg
 view model =
   div []
     [ h2 [] [ text "Random Cats" ]
@@ -65,23 +67,26 @@ view model =
     ]
 
 
-viewGif : Model -> Html Msg
+viewGif : Model -> Html msg
 viewGif model =
+  div [] []
   case model.status of
     Failure ->
       div []
         [ text "I could not load a random cat for some reason. "
         , button [ onClick MorePlease ] [ text "Try Again!" ]
         ]
+    _ -> div [] []
 
-    Loading ->
-      text "Loading..."
+  --   Loading ->
+  --     div []
+  --       [ text "Loading..."]
 
-    Success url ->
-      div []
-        [ button [ onClick MorePlease, style "display" "block" ] [ text "More Please!" ]
-        , img [ src url ] []
-        ]
+  --   Success url ->
+  --     div []
+  --       [ button [ onClick MorePlease, style "display" "block" ] [ text "More Please!" ]
+  --       , img [ src url ] []
+  --       ]
 
 
 
