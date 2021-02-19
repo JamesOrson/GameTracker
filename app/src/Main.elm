@@ -5,9 +5,9 @@ import Browser.Navigation as Nav
 import Example.Cat as Cat
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Page.Home as Home
 import Url
 import Routes
-import Routes exposing (Route(..))
 import Sidenav
 
 
@@ -27,17 +27,18 @@ main =
 
 
 -- MODEL
-type alias Model = 
-  { route : Routes.Route
-  , navKey : Nav.Key
-  , title : String
-  , catModel : Cat.Model
-  }
+type Model
+  = Home Home.Model
+  | Cat Cat.Model
 
+type alias Session =
+  { navKey : Nav.Key
+  , sidenavModel : Sidenav.Model
+  }
 
 init : () -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
 init _ url navKey =
-  ( Model (Routes.fromUrl url) navKey "Game Tracker" Cat.Loading
+  ( Home Home.init
   , Cmd.none)
 
 
@@ -46,25 +47,45 @@ init _ url navKey =
 type Msg
   = UrlChanged Url.Url
   | LinkClicked Browser.UrlRequest
+  | HomeMsg Home.Msg
+  | CatMsg Cat.Msg
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> (MainModel, Cmd Msg)
 update msg model =
   case msg of
     UrlChanged url ->
       let
         newRoute = Routes.fromUrl url
+        sidenavModel = model.sidenavModel
       in
-      ({model | route = newRoute}, Cmd.none)
-    
+      ( { model | route = newRoute
+        , sidenavModel = {sidenavModel | activeRoute = newRoute}
+        }
+      , Cmd.none
+      )
+
     LinkClicked request ->
       case request of 
         Browser.Internal url ->
           (model, Nav.pushUrl model.navKey (Url.toString url))
         Browser.External href ->
           (model, Nav.load href)
+    
+    HomeMsg message ->
+      Home.update message 
+        |> passUpdateTo Cat CatMsg model
+
+    CatMsg message ->
+      Cat.update message model.catModel
+        |> passUpdateTo Cat CatMsg model
 
 
+passUpdateTo : (subModelType -> Model) -> (subMessageType -> Msg) -> (subModelType, Cmd subMessageType) -> (Model, Cmd Msg)
+passUpdateTo toModel toMessage (subModel, subCommand) =
+  ( toModel subModel
+  , Cmd.map toMessage subCommand
+  )
 
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
@@ -79,7 +100,7 @@ view model =
   { title = model.title
   , body =
     [ div []
-      [ Sidenav.view ""
+      [ Sidenav.view model.sidenavModel
       , viewRoute model
       ]
     ]
@@ -88,12 +109,9 @@ view model =
 
 viewRoute : Model -> Html msg
 viewRoute model =
-  case model.route of
-    Routes.Home ->
-      div [] [text "Home"]
+  case model of
+    Home home ->
+      Home.view home
     
-    Routes.Cat ->
-      Cat.view model.catModel
-    
-    Routes.NotFound ->
-      div [] [text "Not found"]
+    Cat cat ->
+      Cat.view cat

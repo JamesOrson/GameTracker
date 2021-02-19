@@ -5181,10 +5181,18 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$application = _Browser_application;
+var $author$project$Routes$Home = {$: 'Home'};
 var $author$project$Example$Cat$Loading = {$: 'Loading'};
-var $author$project$Main$Model = F4(
-	function (route, navKey, title, catModel) {
-		return {catModel: catModel, navKey: navKey, route: route, title: title};
+var $author$project$Example$Cat$Model = function (status) {
+	return {status: status};
+};
+var $author$project$Main$Model = F5(
+	function (route, navKey, title, sidenavModel, catModel) {
+		return {catModel: catModel, navKey: navKey, route: route, sidenavModel: sidenavModel, title: title};
+	});
+var $author$project$Sidenav$Model = F2(
+	function (activeRoute, routes) {
+		return {activeRoute: activeRoute, routes: routes};
 	});
 var $author$project$Routes$NotFound = {$: 'NotFound'};
 var $elm$url$Url$Parser$State = F5(
@@ -5822,7 +5830,6 @@ var $elm$url$Url$Parser$parse = F2(
 					$elm$core$Basics$identity)));
 	});
 var $author$project$Routes$Cat = {$: 'Cat'};
-var $author$project$Routes$Home = {$: 'Home'};
 var $elm$url$Url$Parser$Parser = function (a) {
 	return {$: 'Parser', a: a};
 };
@@ -5940,12 +5947,13 @@ var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = F3(
 	function (_v0, url, navKey) {
 		return _Utils_Tuple2(
-			A4(
+			A5(
 				$author$project$Main$Model,
 				$author$project$Routes$fromUrl(url),
 				navKey,
 				'Game Tracker',
-				$author$project$Example$Cat$Loading),
+				A2($author$project$Sidenav$Model, $author$project$Routes$Home, _List_Nil),
+				$author$project$Example$Cat$Model($author$project$Example$Cat$Loading)),
 			$elm$core$Platform$Cmd$none);
 	});
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -6001,30 +6009,40 @@ var $elm$url$Url$toString = function (url) {
 };
 var $author$project$Main$update = F2(
 	function (msg, model) {
-		if (msg.$ === 'UrlChanged') {
-			var url = msg.a;
-			var newRoute = $author$project$Routes$fromUrl(url);
-			return _Utils_Tuple2(
-				_Utils_update(
-					model,
-					{route: newRoute}),
-				$elm$core$Platform$Cmd$none);
-		} else {
-			var request = msg.a;
-			if (request.$ === 'Internal') {
-				var url = request.a;
+		switch (msg.$) {
+			case 'UrlChanged':
+				var url = msg.a;
+				var sidenavModel = model.sidenavModel;
+				var newRoute = $author$project$Routes$fromUrl(url);
 				return _Utils_Tuple2(
-					model,
-					A2(
-						$elm$browser$Browser$Navigation$pushUrl,
-						model.navKey,
-						$elm$url$Url$toString(url)));
-			} else {
-				var href = request.a;
-				return _Utils_Tuple2(
-					model,
-					$elm$browser$Browser$Navigation$load(href));
-			}
+					_Utils_update(
+						model,
+						{
+							route: newRoute,
+							sidenavModel: _Utils_update(
+								sidenavModel,
+								{activeRoute: newRoute})
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'LinkClicked':
+				var request = msg.a;
+				if (request.$ === 'Internal') {
+					var url = request.a;
+					return _Utils_Tuple2(
+						model,
+						A2(
+							$elm$browser$Browser$Navigation$pushUrl,
+							model.navKey,
+							$elm$url$Url$toString(url)));
+				} else {
+					var href = request.a;
+					return _Utils_Tuple2(
+						model,
+						$elm$browser$Browser$Navigation$load(href));
+				}
+			default:
+				var message = msg.a;
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
 var $elm$html$Html$div = _VirtualDom_node('div');
@@ -6048,8 +6066,25 @@ var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $author$project$Sidenav$navLink = F2(
-	function (path, name) {
+var $author$project$Routes$routeParts = function (route) {
+	switch (route.$) {
+		case 'Home':
+			return _List_Nil;
+		case 'Cat':
+			return _List_fromArray(
+				['cat']);
+		default:
+			return _List_Nil;
+	}
+};
+var $author$project$Routes$toRouteString = function (route) {
+	return '/' + A2(
+		$elm$core$String$join,
+		'/',
+		$author$project$Routes$routeParts(route));
+};
+var $author$project$Sidenav$navLink = F3(
+	function (route, name, model) {
 		return A2(
 			$elm$html$Html$li,
 			_List_Nil,
@@ -6059,9 +6094,10 @@ var $author$project$Sidenav$navLink = F2(
 					$elm$html$Html$a,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$href(path),
+							$elm$html$Html$Attributes$href(
+							$author$project$Routes$toRouteString(route)),
 							A2($elm$html$Html$Attributes$style, 'text-decoration', 'none'),
-							A2($elm$html$Html$Attributes$style, 'color', 'blue')
+							_Utils_eq(route, model.activeRoute) ? A2($elm$html$Html$Attributes$style, 'color', 'green') : A2($elm$html$Html$Attributes$style, 'color', 'red')
 						]),
 					_List_fromArray(
 						[
@@ -6070,18 +6106,19 @@ var $author$project$Sidenav$navLink = F2(
 				]));
 	});
 var $elm$html$Html$ul = _VirtualDom_node('ul');
-var $author$project$Sidenav$view = function (activePage) {
+var $author$project$Sidenav$view = function (model) {
 	return A2(
 		$elm$html$Html$ul,
 		_List_Nil,
 		_List_fromArray(
 			[
-				A2($author$project$Sidenav$navLink, '/', 'Home'),
-				A2($author$project$Sidenav$navLink, 'cat', 'Cat')
+				A3($author$project$Sidenav$navLink, $author$project$Routes$Home, 'Home', model),
+				A3($author$project$Sidenav$navLink, $author$project$Routes$Cat, 'Cat', model)
 			]));
 };
-var $author$project$Main$viewRoute = function (route) {
-	switch (route.$) {
+var $author$project$Main$viewRoute = function (model) {
+	var _v0 = model.route;
+	switch (_v0.$) {
 		case 'Home':
 			return A2(
 				$elm$html$Html$div,
@@ -6117,8 +6154,8 @@ var $author$project$Main$view = function (model) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						$author$project$Sidenav$view(''),
-						$author$project$Main$viewRoute(model.route)
+						$author$project$Sidenav$view(model.sidenavModel),
+						$author$project$Main$viewRoute(model)
 					]))
 			]),
 		title: model.title

@@ -1,10 +1,9 @@
 port module Example.Chat exposing (..)
 
-import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode as D
+import Json.Decode as Decode
 
 
 
@@ -22,7 +21,7 @@ type alias Model =
 
 
 init : () -> ( Model, Cmd Msg )
-init flags =
+init _ =
   ( { draft = "", messages = [] }
   , Cmd.none
   )
@@ -92,7 +91,7 @@ view model =
 
 
 -- DETECT ENTER
-ifIsEnter : msg -> D.Decoder msg
+ifIsEnter : msg -> Decode.Decoder msg
 ifIsEnter msg =
-  D.field "key" D.string
-    |> D.andThen (\key -> if key == "Enter" then D.succeed msg else D.fail "some other key")
+  Decode.field "key" Decode.string
+    |> Decode.andThen (\key -> if key == "Enter" then Decode.succeed msg else Decode.fail "some other key")

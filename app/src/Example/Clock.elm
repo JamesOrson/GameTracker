@@ -1,29 +1,8 @@
 module Example.Clock exposing (..)
 
--- Show the current time in your time zone.
---
--- Read how it works:
---   https://guide.elm-lang.org/effects/time.html
---
--- For an analog clock, check out this SVG example:
---   https://elm-lang.org/examples/clock
---
-
-import Browser
 import Html exposing (..)
 import Task
 import Time
-
-
-
--- MAIN
-main =
-  Browser.element
-    { init = init
-    , view = view
-    , update = update
-    , subscriptions = subscriptions
-    }
 
 
 
@@ -66,7 +45,7 @@ update msg model =
 
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
   Time.every 1000 Tick
 
 

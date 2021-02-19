@@ -1,25 +1,7 @@
 module Example.Book exposing (..)
 
--- Make a GET request to load a book called "Public Opinion"
---
--- Read how it works:
---   https://guide.elm-lang.org/effects/http.html
---
-
-import Browser
 import Html exposing (Html, text, pre)
 import Http
-
-
-
--- MAIN
-main =
-  Browser.element
-    { init = init
-    , update = update
-    , subscriptions = subscriptions
-    , view = view
-    }
 
 
 
@@ -47,7 +29,7 @@ type Msg
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update msg model =
+update msg _ =
   case msg of
     GotText result ->
       case result of
@@ -61,7 +43,7 @@ update msg model =
 
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
   Sub.none
 
 

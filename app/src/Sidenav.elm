@@ -1,4 +1,4 @@
-module Sidenav exposing (view)
+module Sidenav exposing (Model, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -6,20 +6,26 @@ import Routes
 
 
 
-view : String -> Html msg
-view activePage =
+type alias Model =
+  { activeRoute : Routes.Route
+  , routes : List Routes.Route
+  }
+
+
+view : Model -> Html msg
+view model =
   ul []
-    [ navLink "/" "Home"
-    , navLink "cat" "Cat"
+    [ navLink Routes.Home "Home" model
+    , navLink Routes.Cat "Cat" model
     ]
 
-navLink : String -> String -> Html msg
-navLink path name =
+navLink : Routes.Route -> String -> Model -> Html msg
+navLink route name model =
   li []
     [ a
-      [ href path
+      [ href (Routes.toRouteString route)
       , style "text-decoration" "none"
-      , style "color" "blue"
+      , if route == model.activeRoute then (style "color" "green") else (style "color" "red")
       ]
       [ text name ]
     ]

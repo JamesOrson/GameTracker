@@ -1,12 +1,5 @@
 module Example.Cat exposing (..)
 
--- Press a button to send a GET request for random cat GIFs.
---
--- Read how it works:
---   https://guide.elm-lang.org/effects/json.html
---
-
-import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -15,16 +8,22 @@ import Json.Decode exposing (Decoder, field, string)
 
 
 
--- MODEL
-type Model
+type Status
   = Failure
   | Loading
   | Success String
 
 
+
+-- MODEL
+type alias Model
+  = { status : Status
+    }
+
+
 init : () -> (Model, Cmd Msg)
 init _ =
-  (Loading, getRandomCatGif)
+  (Model Loading, getRandomCatGif)
 
 
 
@@ -38,21 +37,21 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     MorePlease ->
-      (Loading, getRandomCatGif)
+      ({ model | status = Loading}, getRandomCatGif)
 
     GotGif result ->
       case result of
         Ok url ->
-          (Success url, Cmd.none)
+          ({ model | status = Success url}, Cmd.none)
 
         Err _ ->
-          (Failure, Cmd.none)
+          ({ model | status = Failure}, Cmd.none)
 
 
 
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
   Sub.none
 
 
@@ -68,7 +67,7 @@ view model =
 
 viewGif : Model -> Html Msg
 viewGif model =
-  case model of
+  case model.status of
     Failure ->
       div []
         [ text "I could not load a random cat for some reason. "

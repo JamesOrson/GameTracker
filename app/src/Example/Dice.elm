@@ -1,38 +1,18 @@
 module Example.Dice exposing (..)
 
--- Press a button to generate a random number between 1 and 6.
---
--- Read how it works:
---   https://guide.elm-lang.org/effects/random.html
---
-
-import Browser
 import Html exposing (..)
 import Html.Events exposing (..)
 import Random
 
 
 
--- MAIN
-main =
-  Browser.element
-    { init = init
-    , update = update
-    , subscriptions = subscriptions
-    , view = view
-    }
-
-
-
 -- MODEL
-type alias Model =
-  { dieFace : Int
-  }
+type alias Model = Int
 
 
 init : () -> (Model, Cmd Msg)
 init _ =
-  ( Model 0
+  ( 0
   , rollDice
   )
 
@@ -53,7 +33,7 @@ update msg model =
       )
 
     NewFace newFace ->
-      ( Model newFace
+      ( newFace
       , Cmd.none
       )
 
@@ -61,7 +41,7 @@ update msg model =
 
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
   Sub.none
 
 
@@ -70,7 +50,7 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
   div []
-    [ h1 [] [ text (String.fromInt model.dieFace) ]
+    [ h1 [] [ text (String.fromInt model) ]
     , button [ onClick Roll ] [ text "Roll" ]
     ]
 
