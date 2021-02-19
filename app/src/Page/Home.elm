@@ -15,11 +15,12 @@ import Sidenav
 type alias Model =
   { title : String }
 
-init : () -> (Model, Cmd Msg)
-init _ url navKey =
+init : (Model, Cmd Msg)
+init =
   ( Model
       "Game Tracker Home" 
-  , Cmd.none)
+  , Cmd.none
+  )
 
 
 
@@ -41,8 +42,4 @@ update msg model =
 -- VIEW
 view : Model -> Html msg
 view model =
-  { title = model.title
-  , body =
-    [ div [] [ text "Home page"]
-    ]
-  }
+  div [] [ text "Home page"]

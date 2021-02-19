@@ -38,8 +38,8 @@ type alias Session =
 
 init : () -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
 init _ url navKey =
-  ( Home Home.init
-  , Cmd.none)
+  Home.init
+    |> passUpdateTo Home HomeMsg
 
 
 
@@ -51,34 +51,39 @@ type Msg
   | CatMsg Cat.Msg
 
 
-update : Msg -> Model -> (MainModel, Cmd Msg)
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case msg of
-    UrlChanged url ->
-      let
-        newRoute = Routes.fromUrl url
-        sidenavModel = model.sidenavModel
-      in
-      ( { model | route = newRoute
-        , sidenavModel = {sidenavModel | activeRoute = newRoute}
-        }
-      , Cmd.none
-      )
+  case (msg, model) of
+    (UrlChanged url, _) ->
+      (model, Cmd.none)
+      -- let
+      --   newRoute = Routes.fromUrl url
+      --   sidenavModel = model.sidenavModel
+      -- in
+      -- ( { model | route = newRoute
+      --   , sidenavModel = {sidenavModel | activeRoute = newRoute}
+      --   }
+      -- , Cmd.none
+      -- )
 
-    LinkClicked request ->
-      case request of 
-        Browser.Internal url ->
-          (model, Nav.pushUrl model.navKey (Url.toString url))
-        Browser.External href ->
-          (model, Nav.load href)
+    (LinkClicked request, _) ->
+      (model, Cmd.none)
+      -- case request of 
+      --   Browser.Internal url ->
+      --     (model, Nav.pushUrl model.navKey (Url.toString url))
+      --   Browser.External href ->
+      --     (model, Nav.load href)
     
-    HomeMsg message ->
-      Home.update message 
-        |> passUpdateTo Cat CatMsg model
+    (HomeMsg message, Home home) ->
+      Home.update message home
+        |> passUpdateTo Home HomeMsg
 
-    CatMsg message ->
-      Cat.update message model.catModel
-        |> passUpdateTo Cat CatMsg model
+    (CatMsg message, _) ->
+      (model, Cmd.none)
+      -- Cat.update message model.catModel
+      --   |> passUpdateTo Cat CatMsg
+    (_, _) ->
+      (model, Cmd.none)
 
 
 passUpdateTo : (subModelType -> Model) -> (subMessageType -> Msg) -> (subModelType, Cmd subMessageType) -> (Model, Cmd Msg)
@@ -97,12 +102,13 @@ subscriptions _ =
 -- VIEW
 view : Model -> Browser.Document Msg
 view model =
-  { title = model.title
+  { title = "Game Tracker"
   , body =
     [ div []
-      [ Sidenav.view model.sidenavModel
-      , viewRoute model
-      ]
+      -- [ Sidenav.view model.sidenavModel
+      -- , viewRoute model
+      -- ]
+      [ viewRoute model ]
     ]
   }
 
@@ -114,4 +120,5 @@ viewRoute model =
       Home.view home
     
     Cat cat ->
-      Cat.view cat
+      div [] [text "Cat"]
+      -- Cat.view cat
