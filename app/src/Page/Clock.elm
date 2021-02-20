@@ -1,4 +1,10 @@
-module Example.Clock exposing (..)
+module Page.Clock exposing ( Model
+                          , Message
+                          , init
+                          , view
+                          , update
+                          , subscriptions
+                          )
 
 import Html exposing (..)
 import Task
@@ -13,8 +19,8 @@ type alias Model =
   }
 
 
-init : () -> (Model, Cmd Msg)
-init _ =
+init : (Model, Cmd Message)
+init =
   ( Model Time.utc (Time.millisToPosix 0)
   , Task.perform AdjustTimeZone Time.here
   )
@@ -22,15 +28,15 @@ init _ =
 
 
 -- UPDATE
-type Msg
+type Message
   = Tick Time.Posix
   | AdjustTimeZone Time.Zone
 
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
-update msg model =
-  case msg of
+update : Message -> Model -> (Model, Cmd Message)
+update message model =
+  case message of
     Tick newTime ->
       ( { model | time = newTime }
       , Cmd.none
@@ -44,18 +50,20 @@ update msg model =
 
 
 -- SUBSCRIPTIONS
-subscriptions : Model -> Sub Msg
+subscriptions : Model -> Sub Message
 subscriptions _ =
   Time.every 1000 Tick
 
 
 
 -- VIEW
-view : Model -> Html Msg
+view : Model -> { title : String, body : Html Message }
 view model =
   let
     hour   = String.fromInt (Time.toHour   model.zone model.time)
     minute = String.fromInt (Time.toMinute model.zone model.time)
     second = String.fromInt (Time.toSecond model.zone model.time)
   in
-  h1 [] [ text (hour ++ ":" ++ minute ++ ":" ++ second) ]
+  { title = "Game Tracker - Clock"
+  , body = h1 [] [ text (hour ++ ":" ++ minute ++ ":" ++ second) ]
+  }

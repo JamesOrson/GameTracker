@@ -1,4 +1,10 @@
-module Example.Cat exposing (..)
+module Page.Cat exposing ( Model
+                          , Message
+                          , init
+                          , view
+                          , update
+                          , subscriptions
+                          )
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -16,82 +22,80 @@ type Status
 
 
 -- MODEL
-type alias Model
-  = { status : Status
-    }
+type alias Model = Status
 
 
-init : (Model, Cmd Msg)
+init : (Model, Cmd Message)
 init =
-  ( Model Loading
+  ( Loading
   , getRandomCatGif
   )
 
 
 
 -- UPDATE
-type Msg
+type Message
   = MorePlease
   | GotGif (Result Http.Error String)
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
-update msg model =
-  case msg of
+update : Message -> Model -> (Model, Cmd Message)
+update message model =
+  case message of
     MorePlease ->
-      ({ model | status = Loading}, getRandomCatGif)
+      (Loading, getRandomCatGif)
 
     GotGif result ->
       case result of
         Ok url ->
-          ({ model | status = Success url}, Cmd.none)
+          (Success url, Cmd.none)
 
         Err _ ->
-          ({ model | status = Failure}, Cmd.none)
+          (Failure, Cmd.none)
 
 
 
 -- SUBSCRIPTIONS
-subscriptions : Model -> Sub Msg
+subscriptions : Model -> Sub Message
 subscriptions _ =
   Sub.none
 
 
 
 -- VIEW
-view : Model -> Html msg
+view : Model -> { title : String, body : Html Message }
 view model =
-  div []
+  { title = "Game Tracker - Cat"
+  , body = div []
     [ h2 [] [ text "Random Cats" ]
     , viewGif model
     ]
+  }
 
 
-viewGif : Model -> Html msg
+viewGif : Model -> Html Message
 viewGif model =
-  div [] []
-  case model.status of
+  case model of
     Failure ->
       div []
         [ text "I could not load a random cat for some reason. "
         , button [ onClick MorePlease ] [ text "Try Again!" ]
         ]
-    _ -> div [] []
 
-  --   Loading ->
-  --     div []
-  --       [ text "Loading..."]
+    Loading ->
+      div []
+        [ text "Loading..."]
 
-  --   Success url ->
-  --     div []
-  --       [ button [ onClick MorePlease, style "display" "block" ] [ text "More Please!" ]
-  --       , img [ src url ] []
-  --       ]
+    Success url ->
+      div []
+        [ button [ onClick MorePlease, style "display" "block" ] [ text "More Please!" ]
+        , img [ src url ] []
+        ]
 
 
 
 -- HTTP
-getRandomCatGif : Cmd Msg
+getRandomCatGif : Cmd Message
 getRandomCatGif =
   Http.get
     { url = "https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=cat"

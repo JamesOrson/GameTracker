@@ -2,18 +2,21 @@ module Main exposing (..)
 
 import Browser
 import Browser.Navigation as Nav
-import Example.Cat as Cat
+import Page exposing (..)
+import Page.Book as Book
+import Page.Cat as Cat
+import Page.Clock as Clock
+import Page.Dice as Dice
+import Page.Home as Home
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Page.Home as Home
 import Url
-import Routes
 import Sidenav
-
+import Html
 
 
 -- MAIN
-main : Program () Model Msg
+main : Program () Model Message
 main =
   Browser.application
     { init = init
@@ -28,32 +31,38 @@ main =
 
 -- MODEL
 type Model
-  = Home Home.Model
-  | Cat Cat.Model
+  = BookModel Book.Model
+  | CatModel Cat.Model
+  | ClockModel Clock.Model
+  | DiceModel Dice.Model
+  | HomeModel Home.Model
 
 type alias Session =
   { navKey : Nav.Key
   , sidenavModel : Sidenav.Model
   }
 
-init : () -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
+init : () -> Url.Url -> Nav.Key -> (Model, Cmd Message)
 init _ url navKey =
-  Cat.init
-    |> passUpdateTo Cat CatMsg
+  Home.init
+    |> convertUpdate HomeModel HomeMessage
 
 
 
 -- UPDATE
-type Msg
+type Message
   = UrlChanged Url.Url
   | LinkClicked Browser.UrlRequest
-  | HomeMsg Home.Msg
-  | CatMsg Cat.Msg
+  | BookMessage Book.Message
+  | CatMessage Cat.Message
+  | ClockMessage Clock.Message
+  | DiceMessage Dice.Message
+  | HomeMessage Home.Message
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
-update msg model =
-  case (msg, model) of
+update : Message -> Model -> (Model, Cmd Message)
+update message model =
+  case (message, model) of
     (UrlChanged url, _) ->
       (model, Cmd.none)
       -- let
@@ -74,50 +83,83 @@ update msg model =
       --   Browser.External href ->
       --     (model, Nav.load href)
     
-    -- (HomeMsg message, Home home) ->
-    --   Home.update message home
-    --     |> passUpdateTo Home HomeMsg
+    (HomeMessage innerMessage, HomeModel innerModel) ->
+      Home.update innerMessage innerModel
+        |> convertUpdate HomeModel HomeMessage
 
-    (CatMsg message, Cat cat) ->
-      Cat.update message cat
-        |> passUpdateTo Cat CatMsg
+    (BookMessage bookMessage, BookModel innerModel) ->
+      Book.update bookMessage innerModel
+        |> convertUpdate BookModel BookMessage
+    
+    (CatMessage innerMessage, CatModel innerModel) ->
+      Cat.update innerMessage innerModel
+        |> convertUpdate CatModel CatMessage
+
+    (ClockMessage innerMessage, ClockModel innerModel) ->
+      Clock.update innerMessage innerModel
+        |> convertUpdate ClockModel ClockMessage
+    
+    (DiceMessage innerMessage, DiceModel innerModel) ->
+      Dice.update innerMessage innerModel
+        |> convertUpdate DiceModel DiceMessage
+    
+    
     (_, _) ->
       (model, Cmd.none)
 
 
-passUpdateTo : (subModelType -> Model) -> (subMessageType -> Msg) -> (subModelType, Cmd subMessageType) -> (Model, Cmd Msg)
-passUpdateTo toModel toMessage (subModel, subCommand) =
+convertSubscription : (inMessage -> Message) -> Sub inMessage -> Sub Message
+convertSubscription toMessage inMessage =
+  Sub.map toMessage inMessage
+
+convertUpdate : (inModel -> Model) -> (inMessage -> Message) -> (inModel, Cmd inMessage) -> (Model, Cmd Message)
+convertUpdate toModel toMessage (subModel, subCommand) =
   ( toModel subModel
   , Cmd.map toMessage subCommand
   )
 
 -- SUBSCRIPTIONS
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-  Sub.none
+subscriptions : Model -> Sub Message
+subscriptions model =
+  case model of
+    HomeModel innerModel ->
+      Home.subscriptions innerModel
+        |> convertSubscription HomeMessage
+    
+    BookModel innerModel ->
+      Book.subscriptions innerModel
+        |> convertSubscription BookMessage
+    
+    CatModel innerModel ->
+      Cat.subscriptions innerModel
+        |> convertSubscription CatMessage
+    
+    ClockModel innerModel ->
+      Clock.subscriptions innerModel
+        |> convertSubscription ClockMessage
+    
+    DiceModel innerModel ->
+      Dice.subscriptions innerModel
+        |> convertSubscription DiceMessage
 
 
 
 -- VIEW
-view : Model -> Browser.Document Msg
+view : Model -> Browser.Document Message
 view model =
-  { title = "Game Tracker"
-  , body =
-    [ div []
-      -- [ Sidenav.view model.sidenavModel
-      -- , viewRoute model
-      -- ]
-      [ viewRoute model ]
-    ]
-  }
-
-
-viewRoute : Model -> Html msg
-viewRoute model =
   case model of
-    Home home ->
-      Home.view home
+    HomeModel innerModel ->
+      Page.view (Home.view innerModel) HomeMessage
     
-    Cat cat ->
-      -- div [] [text "Cat"]
-      Cat.view cat
+    BookModel innerModel ->
+      Page.view (Book.view innerModel) BookMessage
+    
+    CatModel innerModel ->
+      Page.view (Cat.view innerModel) CatMessage
+    
+    ClockModel innerModel ->
+      Page.view (Clock.view innerModel) ClockMessage
+    
+    DiceModel innerModel ->
+      Page.view (Dice.view innerModel) DiceMessage
+    

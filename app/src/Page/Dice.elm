@@ -1,4 +1,4 @@
-module Page.Home exposing ( Model
+module Page.Dice exposing ( Model
                           , Message
                           , init
                           , view
@@ -7,31 +7,39 @@ module Page.Home exposing ( Model
                           )
 
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Events exposing (..)
+import Random
 
 
 
 -- MODEL
-type alias Model = String
+type alias Model = Int
+
 
 init : (Model, Cmd Message)
 init =
-  ( "Game Tracker Home" 
-  , Cmd.none
+  ( 0
+  , rollDice
   )
 
 
 
 -- UPDATE
 type Message
-  = None
+  = Roll
+  | NewFace Int
 
 
 update : Message -> Model -> (Model, Cmd Message)
 update message model =
   case message of
-    None ->
+    Roll ->
       ( model
+      , rollDice
+      )
+
+    NewFace newFace ->
+      ( newFace
       , Cmd.none
       )
 
@@ -47,8 +55,14 @@ subscriptions _ =
 -- VIEW
 view : Model -> { title : String, body : Html Message }
 view model =
-  { title = model
+  { title = "Game Tracker - Dice"
   , body = div []
-    [ h2 [] [ text "Home page" ]
+    [ h1 [] [ text (String.fromInt model) ]
+    , button [ onClick Roll ] [ text "Roll" ]
     ]
   }
+
+-- RANDOM
+rollDice : Cmd Message
+rollDice =
+  Random.generate NewFace (Random.int 1 6)

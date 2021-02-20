@@ -12,14 +12,14 @@ type alias Model =
   }
 
 
-view : Model -> Html msg
+view : Model -> Html message
 view model =
   ul []
     [ navLink Routes.Home "Home" model
     , navLink Routes.Cat "Cat" model
     ]
 
-navLink : Routes.Route -> String -> Model -> Html msg
+navLink : Routes.Route -> String -> Model -> Html message
 navLink route name model =
   li []
     [ a
